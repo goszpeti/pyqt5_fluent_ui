@@ -1,0 +1,31 @@
+# Specify sip v6 as the build system for the package.
+[build-system]
+requires = ["sip >=6, <7", "PyQt-builder", "PyQt5"]
+build-backend = "sipbuild.api"
+
+# Specify the PEP 566 metadata for the project.
+[tool.sip.metadata]
+name = "PyQtFluentWindow"
+version = "1.0.0"
+requires-dist = "PyQt5"
+
+[tool.sip]
+project-factory = "pyqtbuild:PyQtProject"
+
+[tool.sip.project]
+sip-files-dir = "sip"
+sip-include-dirs = ["${SIP_INCLUDE_DIR}"]
+wheel-includes = ["build/package/bin/*.*"]
+build-dir = "./build_sip"
+
+# Configure the building of the fib bindings.
+[tool.sip.bindings.PyQtFluentWindow]
+#headers = ["src/*.h"]
+#sources =  ["src/*.cpp"]
+include-dirs = ["src", "build/include_Release"] # TODO Hacky
+libraries = ["FluentWindow"]
+library-dirs = ["build/package/bin"]
+qmake-QT = ["widgets"]
+pep484-pyi = true # add type hints
+
+
