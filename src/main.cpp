@@ -13,6 +13,7 @@ int main(int argc, char *argv[])
     // ui.setupUi(&widget);
     
     auto main_window = FluentWindow();
+
     //AnalogClock clock(&window);
     //window.resize(250, 150);
     //window.setWindowTitle("Simple example");
