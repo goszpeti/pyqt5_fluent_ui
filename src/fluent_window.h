@@ -2,6 +2,8 @@
 #define FLUENT_WINDOW_H
 
 #include <QWidget>
+#include <QPropertyAnimation>
+
 #include "ui_fluent_window.h"
 
 #if defined(FLW_LIBRARY)
@@ -13,11 +15,6 @@
 #if defined(WIN32)
     #include <windows.h>
 #endif
-
-// LEFT_MENU_MIN_WIDTH = 70
-// LEFT_MENU_MAX_WIDTH = 250
-// RIGHT_MENU_MIN_WIDTH = 0
-// RIGHT_MENU_MAX_WIDTH = 270
 
 enum resizeDirection{
     default, 
@@ -32,14 +29,13 @@ class FLW_SHARED_EXPORT FluentWindow : public QMainWindow
 
 public:
     explicit FluentWindow(QMainWindow *parent = nullptr);
+    ~FluentWindow();
 
 public slots:
     void moveWindow(QEvent *event);
 
 protected:
     bool eventFilter( QObject *dest, QEvent *event );
-
-private:
     void setRestoreMaxButtonState();
     void enableNativeAnimations();
     void maximizeRestore();
@@ -47,10 +43,13 @@ private:
     bool nativeEvent(const QByteArray &eventType, void *message, long *result);
     void handleResizeCursor(QHoverEvent *event , uint8_t x_offset=10, uint8_t y_offset=8);
     void resizeWindow(QMouseEvent *event);
+    void toggle_left_menu();
+private:
 
-    Ui::MainWindow _ui;
+    Ui::MainWindow *_ui = NULL;
+    QPropertyAnimation *_left_anim = NULL;
 
-    std::string _title_text; // save app title (hide for collapse)
+    QString _title_text; // save app title (hide for collapse)
 
     // window resize
     bool _resize_pressed = false;
@@ -60,7 +59,6 @@ private:
 
     // window move
     QPoint _drag_position;
-
 };
 
 

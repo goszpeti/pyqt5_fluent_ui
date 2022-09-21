@@ -1,15 +1,17 @@
 project("FluentWindow")
 cmake_minimum_required(VERSION 3.22)
+set(CONAN_DISABLE_CHECK_COMPILER ON)
+
+if ( EXISTS ${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo_multi.cmake)
+    include(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo_multi.cmake)
+elseif ( EXISTS ${CMAKE_CURRENT_BINARY_DIR}/../conanbuildinfo_multi.cmake)
+    include(${CMAKE_CURRENT_BINARY_DIR}/../conanbuildinfo_multi.cmake)
+endif()
+
 if ( EXISTS ${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake)
     include(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake)
 elseif ( EXISTS ${CMAKE_CURRENT_BINARY_DIR}/../conanbuildinfo.cmake)
     include(${CMAKE_CURRENT_BINARY_DIR}/../conanbuildinfo.cmake)
-elseif ( EXISTS ${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo_multi.cmake)
-    include(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo_multi.cmake)
-elseif ( EXISTS ${CMAKE_CURRENT_BINARY_DIR}/../conanbuildinfo_multi.cmake)
-    include(${CMAKE_CURRENT_BINARY_DIR}/../conanbuildinfo_multi.cmake)
-else()
-    message(FATAL_ERROR "Conan build info can't be found.")
 endif()
 conan_basic_setup(TARGETS NO_OUTPUT_DIRS)
 
@@ -64,7 +66,7 @@ target_link_libraries(${LIB_NAME}
     # Qt5::Core
     # Qt5::Widgets
     # Qt5::Gui
-    CONAN_PKG::qt
+    qt::qt
 
 )
 
@@ -74,8 +76,6 @@ install(TARGETS ${LIB_NAME}
         ARCHIVE DESTINATION bin
         PUBLIC_HEADER DESTINATION include)
 
-install(TARGETS ${_target} EXPORT dev_essential_targets)
-
 add_executable(${LIB_NAME}_EXAMPLE
     src/main.cpp
 )
@@ -83,12 +83,12 @@ add_executable(${LIB_NAME}_EXAMPLE
 target_include_directories(${LIB_NAME}_EXAMPLE PRIVATE
     $<$<CONFIG:RELWITHDEBINFO>:${CMAKE_CURRENT_BINARY_DIR}/include_RelWithDebInfo>
     $<$<CONFIG:RELEASE>:${CMAKE_CURRENT_BINARY_DIR}/include_Release>
-
+    $<$<CONFIG:DEBUG>:${CMAKE_CURRENT_BINARY_DIR}/include_Debug>
 )
 
 target_link_libraries(${LIB_NAME}_EXAMPLE
     ${LIB_NAME}
-    CONAN_PKG::qt
+    qt::qt
 )
 
 add_custom_command( TARGET ${LIB_NAME} POST_BUILD

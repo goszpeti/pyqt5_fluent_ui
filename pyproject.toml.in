@@ -22,7 +22,7 @@ build-dir = "./build_sip"
 [tool.sip.bindings.PyQtFluentWindow]
 #headers = ["src/*.h"]
 #sources =  ["src/*.cpp"]
-include-dirs = ["src", "build/include_Release"] # TODO Hacky
+include-dirs = ["src", "build/include_Release", "build/include_Debug"] # TODO Hacky
 libraries = ["FluentWindow"]
 library-dirs = ["build/package/bin"]
 qmake-QT = ["widgets"]

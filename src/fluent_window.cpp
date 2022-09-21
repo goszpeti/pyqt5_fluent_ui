@@ -6,18 +6,24 @@
 #include <QGraphicsDropShadowEffect>
 
 #include "fluent_window.h"
+// using namespace std;
 
 // #if defined(WIN32)
 //     Q_IMPORT_PLUGIN (QWindowsIntegrationPlugin)
 // #else
 //     Q_IMPORT_PLUGIN(QXcbIntegrationPlugin) // TODO needed?
 // #endif
+ 
+constexpr int LEFT_MENU_MIN_WIDTH = 80;
+constexpr int LEFT_MENU_MAX_WIDTH = 350; // int(310 + 20*(2/get_display_scaling()))
+constexpr int RIGHT_MENU_MIN_WIDTH = 0;
+constexpr int RIGHT_MENU_MAX_WIDTH = 400; //int(200 + 200*(2/get_display_scaling()))
 
 FluentWindow::FluentWindow(QMainWindow *parent):
-    _resize_direction(resizeDirection::default), _drag_position(0,0), _title_text("")
+    // _resize_direction(resizeDirection::default), _drag_position(0,0), _title_text(""),
+     _ui(new Ui::MainWindow)
 {
-
-    _ui.setupUi(this);
+    _ui->setupUi(this);
     this->setWindowFlags(Qt::FramelessWindowHint | Qt::WindowSystemMenuHint |
                          Qt::WindowMinimizeButtonHint | Qt::WindowMaximizeButtonHint);
 
@@ -26,11 +32,14 @@ FluentWindow::FluentWindow(QMainWindow *parent):
     // effect.setBlurRadius(10);
     // this->setGraphicsEffect(&effect);
 
-    // window buttons
-    connect(_ui.restore_max_button,  &QPushButton::clicked, this, &FluentWindow::maximizeRestore);
-    connect(_ui.minimize_button,  &QPushButton::clicked, this, &FluentWindow::showMinimized);
-    connect(_ui.close_button,  &QPushButton::clicked, this, &FluentWindow::close);
+    _ui->left_menu_frame->setMinimumWidth(LEFT_MENU_MIN_WIDTH);
 
+    // window buttons
+    connect(_ui->restore_max_button,  &QPushButton::clicked, this, &FluentWindow::maximizeRestore);
+    connect(_ui->minimize_button,  &QPushButton::clicked, this, &FluentWindow::showMinimized);
+    connect(_ui->close_button,  &QPushButton::clicked, this, &FluentWindow::close);
+
+    connect(_ui->toggle_left_menu_button, &QPushButton::clicked, this, &FluentWindow::toggle_left_menu);
     // this->findChild(QObject, name="toggle_left_menu_button").clicked.connect(this->toggle_left_menu)
     // this->findChild(QObject, name="settings_button").clicked.connect(this->toggle_right_menu)
     // this->findChild(QObject, name="page_info_label").setText("")
@@ -41,6 +50,60 @@ FluentWindow::FluentWindow(QMainWindow *parent):
 
     QCoreApplication::instance()->installEventFilter(this);
 
+}
+
+
+FluentWindow::~FluentWindow()
+{
+    delete _ui;
+    if (_left_anim==NULL){
+        delete _left_anim;
+    }
+}
+
+
+void FluentWindow::toggle_left_menu(){
+        int width = _ui->left_menu_frame->width();
+        int width_to_set = 0;
+        bool maximize = false;
+        // switch extended and minimized state
+        if (width == LEFT_MENU_MIN_WIDTH){
+            width_to_set = LEFT_MENU_MAX_WIDTH;
+            maximize = true;
+        }
+        else{
+            width_to_set = LEFT_MENU_MIN_WIDTH;
+            maximize = false;
+        }
+
+        _left_anim = new QPropertyAnimation(_ui->left_menu_frame, "minimumWidth");
+        _left_anim->setDuration(200);
+        _left_anim->setStartValue(width);
+        _left_anim->setEndValue(width_to_set);
+        _left_anim->setEasingCurve(QEasingCurve::InOutQuart);
+        _left_anim->start();
+
+        // hide title
+        if (maximize){
+            _ui->title_label->setText(_title_text);
+        }
+        else{
+            _ui->title_label->setText("");
+        }
+        // hide menu button texts
+        // name, (button, _) in self.page_entries.items():
+        // for button in self.ui.left_menu_middle_subframe.findChildren(QPushButton):
+        //     name = self.page_widgets.get_display_name_by_name(button.objectName())
+        //     if maximize:
+        //         button.setText(name)
+        //         button.setStyleSheet("text-align:left;")
+        //     else:
+        //         button.setText("")
+        //         button.setStyleSheet("text-align:middle;")
+
+        // if (_ui->settings_button.isChecked()){
+        //     self.toggle_right_menu();
+        // }
 }
 
 bool FluentWindow::eventFilter( QObject *object, QEvent *event ) {
@@ -77,7 +140,7 @@ bool FluentWindow::eventFilter( QObject *object, QEvent *event ) {
         return QMainWindow::eventFilter(object, event);
     }
     // Maximize on doubleclick and move witth the top frame
-    if(object == (QObject *)_ui.left_menu_top_subframe || object == (QObject *)_ui.top_frame) { // 
+    if(object == (QObject *)_ui->left_menu_top_subframe || object == (QObject *)_ui->top_frame) { // 
         switch (event->type()) {
             case QEvent::MouseButtonDblClick:{
                 if (((QMouseEvent *)event)->button() == Qt::LeftButton) {
@@ -107,12 +170,12 @@ void FluentWindow::maximizeRestore() {
 
 void FluentWindow::setRestoreMaxButtonState() {
     if (this->isMaximized()) {
-        _ui.restore_max_button->setToolTip("Restore");
-        _ui.restore_max_button->setIcon(QIcon(":/fluent/icons/restore.png"));
+        _ui->restore_max_button->setToolTip("Restore");
+        _ui->restore_max_button->setIcon(QIcon(":/fluent/icons/restore.png"));
     }
     else{
-        _ui.restore_max_button->setToolTip("Maximize");
-        _ui.restore_max_button->setIcon(QIcon(":/fluent/icons/maximize.png"));
+        _ui->restore_max_button->setToolTip("Maximize");
+        _ui->restore_max_button->setIcon(QIcon(":/fluent/icons/maximize.png"));
     }
 }
 

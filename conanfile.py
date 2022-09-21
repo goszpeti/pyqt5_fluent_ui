@@ -7,7 +7,7 @@ from conans import ConanFile, CMake, tools
 class PyQt5FluentUiConan(ConanFile):
     name = "pyqt5_fluent_ui"
     settings = "os", "compiler", "build_type", "arch"
-    generators = "cmake", "txt", "virtualenv", "qt", "cmake_find_package_multi"
+    generators = "cmake", "txt", "qt", "CMakeDeps" #"cmake_multi", 
     default_options = {"qt:shared": True}
     default_user = "goszpeti"
     default_channel = "testing"
@@ -19,17 +19,22 @@ class PyQt5FluentUiConan(ConanFile):
         self.tool_requires("cmake/3.22.0")
 
     def requirements(self):
-        self.requires("qt/5.15.2", private=True)
+        self.requires("qt/5.15.5", private=True)
+        # TODO pip install PyQt-builder
 
     def build(self):
-        import PyQt5
+        cmake = CMake(self)
+        cmake.definitions["CMAKE_BUILD_TYPE"] = str(self.settings.build_type).upper()
+        # --warn-uninitialized
+        cmake.configure()
+        cmake.build()
+        cmake.install()
+        self._build_python_bindings()
+
+    def _build_python_bindings(self):
+        # use pip 21.0?
         import pkg_resources
         bindings_path = Path(pkg_resources.resource_filename('PyQt5', 'bindings'))
-        cmake = CMake(self)
-        cmake.configure()
-        #cmake.build()
-        #cmake.install()
-        # use pip 21.0
         os.environ["PATH"] +=  ";" + self.deps_cpp_info["qt"].bin_paths[0]
         with open(self.source_folder + "/pyproject.toml.in", "r") as sfd:
             pyproject_content = sfd.read()
@@ -42,7 +47,8 @@ class PyQt5FluentUiConan(ConanFile):
         #os.removedirs(self.source_folder + "/build_sip")
         with tools.chdir(self.source_folder):
             with tools.vcvars(self):
-                os.system("sip-wheel --verbose")
+                os.system("pip install . --verbose")
+                #os.system("sip-wheel --verbose")
         os.chdir(self.build_folder)
         
         #os.system(f"{sys.executable} -m pip install {self.source_folder}")
