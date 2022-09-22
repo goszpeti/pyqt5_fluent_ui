@@ -35,30 +35,30 @@ public slots:
     void moveWindow(QEvent *event);
 
 protected:
-    bool eventFilter( QObject *dest, QEvent *event );
+    bool eventFilter( QObject *dest, QEvent *event ) override;
     void setRestoreMaxButtonState();
     void enableNativeAnimations();
     void maximizeRestore();
-    void mousePressEvent(QMouseEvent *event);
-    bool nativeEvent(const QByteArray &eventType, void *message, long *result);
+    void mousePressEvent(QMouseEvent *event) override;
+    bool nativeEvent(const QByteArray &eventType, void *message, long *result) override;
     void handleResizeCursor(QHoverEvent *event , uint8_t x_offset=10, uint8_t y_offset=8);
     void resizeWindow(QMouseEvent *event);
     void toggle_left_menu();
 private:
 
-    Ui::MainWindow *_ui = NULL;
-    QPropertyAnimation *_left_anim = NULL;
+    std::unique_ptr<Ui::MainWindow> _ui{};
+    std::unique_ptr<QPropertyAnimation> _left_anim{};
 
-    QString _title_text; // save app title (hide for collapse)
+    QString _title_text{}; // save app title (hide for collapse)
 
     // window resize
     bool _resize_pressed = false;
     resizeDirection _resize_direction;
-    QPoint _resize_point;
-    QRect _last_geometry;
+    QPoint _resize_point{};
+    QRect _last_geometry{};
 
     // window move
-    QPoint _drag_position;
+    QPoint _drag_position{};
 };
 
 
